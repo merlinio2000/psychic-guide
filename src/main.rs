@@ -1,14 +1,16 @@
-use pcap::Device;
-
 const DLT_IEEE802_11_RADIO: i32 = 127;
 
 fn main() -> Result<(), pcap::Error> {
-    let mut cap = Device::lookup()?.unwrap().open()?;
+    let device = std::env::args().nth(1).unwrap_or("wlan0".into());
+
+    println!("going to listen on {device}");
+
+    let mut cap = pcap::Capture::from_device(&device[..])?.rfmon(true).open()?;
 
     cap.set_datalink(pcap::Linktype(DLT_IEEE802_11_RADIO))?;
 
     while let Ok(packet) = cap.next_packet() {
-        println!("received packet {:?}", packet);
+        println!("received packet {packet:?}");
 
         if let Ok(radiotap_header) = radiotap::Radiotap::from_bytes(packet.data) {
             println!("radiotap {radiotap_header:?}");
