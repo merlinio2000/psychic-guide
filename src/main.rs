@@ -10,19 +10,20 @@ fn main() -> Result<(), pcap::Error> {
     cap.set_datalink(pcap::Linktype(DLT_IEEE802_11_RADIO))?;
 
     while let Ok(packet) = cap.next_packet() {
-        println!("received packet {packet:?}");
+        println!("received packet {packet:#?}");
 
         if let Ok(radiotap_header) = radiotap::Radiotap::from_bytes(packet.data) {
-            println!("radiotap {radiotap_header:?}");
+            println!("radiotap {radiotap_header:#?}");
 
             // strip away the radiotap data from the 802.11 frame
             let payload = &packet.data[radiotap_header.header.length..];
 
             match libwifi::parse_frame(payload) {
-                Ok(frame) => println!("802.11 frame {frame:?}"),
+                Ok(frame) => println!("802.11 frame {frame:#?}"),
                 Err(err) => eprintln!("failed to parse 802.11 frame {err}"),
             }
         }
+        println!("\n{:-<50}\n", "");
     }
 
     Ok(())
