@@ -125,13 +125,12 @@ fn main() -> Result<(), pcap::Error> {
         println!("received packet with header {:?}", packet.header);
 
         if let Ok(radiotap_header) = radiotap::Radiotap::from_bytes(packet.data) {
-            println!("radiotap {radiotap_header:#?}");
             // strip away the radiotap data from the 802.11 frame
             let payload = &packet.data[radiotap_header.header.length..];
 
             match libwifi::parse_frame(payload) {
                 Ok(frame) => {
-                    println!("802.11 frame {frame:?}");
+                    println!("successfully parsed 802.11 frame");
                     handle_capture(frame, radiotap_header);
                 }
                 Err(err) => eprintln!("failed to parse 802.11 frame {err}"),
